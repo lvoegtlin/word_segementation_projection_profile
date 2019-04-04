@@ -6,7 +6,7 @@ import os
 
 def main():
     parser = argparse.ArgumentParser(description='Word segementation based on the projection profile')
-    parser.add_argument('--input_image', required=True,
+    parser.add_argument('--input_folder', required=True,
                         help='The input image (line) on which we perform the word segmentation')
     parser.add_argument('--output_folder', required=True,
                         help='The path to the output folder')
@@ -21,18 +21,20 @@ def main():
 
     args = parser.parse_args()
 
-    img = Image.open(args.input_image, 'r')
-    # turn image
-    img = np.swapaxes(img, 0, 1)
-    _whiteLine = img.shape[1] * 255
-    _threshold = _whiteLine - args.white_pixel * 255
-    _word_threshold = args.word_space
-
-    img_name, extension = os.path.splitext(os.path.basename(args.input_image))
-
     args.output_folder = create_text_line_folder(args.output_folder)
 
-    cutWordImages(getVerticalProjectionProfile(img), img, _threshold, _word_threshold, args.output_folder, img_name, extension)
+    for root, dirs, files in os.walk(args.input_folder):
+        for file in files:
+            img = Image.open(os.path.join(root, file), 'r')
+            # turn image
+            img = np.swapaxes(img, 0, 1)
+            _whiteLine = img.shape[1] * 255
+            _threshold = _whiteLine - args.white_pixel * 255
+            _word_threshold = args.word_space
+
+            img_name, extension = os.path.splitext(os.path.basename(file))
+
+            cutWordImages(getVerticalProjectionProfile(img), img, _threshold, _word_threshold, args.output_folder, img_name, extension)
 
 
 def create_text_line_folder(output_folder):
